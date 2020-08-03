@@ -61,3 +61,35 @@ func TestGetPutDelete(t *testing.T) {
 		t.Fatal("Get for key 123 after calling delete should return nil and false")
 	}
 }
+
+func TestUnorderedRange(t *testing.T) {
+	m := initMap()
+
+	kvs := map[interface{}]interface{}{
+		"key":            123,
+		123:              "key",
+		"some-key":       "val 1",
+		"some-other-key": "val_2",
+		56.11:            true,
+	}
+
+	var insertCount int
+	for k, v := range kvs {
+		insertCount++
+		m.Put(k, v)
+	}
+
+	var rangeCount int
+	rangeFunc := func(key interface{}, val interface{}) {
+		rangeCount++
+		if kvs[key] != val {
+			t.Fatalf("Value mismatch for key %s. In standard map: %v, In ordered_sync_map %v.", key, kvs[key], val)
+		}
+	}
+
+	m.UnorderedRange(rangeFunc)
+
+	if insertCount != rangeCount {
+		t.Fatalf("Range count mismatch. Expected %d got %d", insertCount, rangeCount)
+	}
+}
