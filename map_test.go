@@ -93,3 +93,27 @@ func TestUnorderedRange(t *testing.T) {
 		t.Fatalf("Range count mismatch. Expected %d got %d", insertCount, rangeCount)
 	}
 }
+
+func TestOrderedRange(t *testing.T) {
+	kvs := [][]interface{}{
+		{"key", 123, "some-key", "some-other-key", 56.11}, //keys
+		{123, "key", "val 1", "val_2", true}, //values
+	}
+
+	m := mp.New()
+	for i, _ := range kvs[0] {
+		m.Put(kvs[0][i], kvs[1][i])
+	}
+
+	var rangeCount int
+	rangeFunc := func(key interface{}, val interface{}) {
+		if kvs[0][rangeCount] != key {
+			t.Fatalf("Key sequesnce mismatic at position %d. Extected %v, received %v.", rangeCount+1, kvs[0][rangeCount], key)
+		}
+		if kvs[1][rangeCount] != val {
+			t.Fatalf("Value sequesnce mismatic at position %d. Extected %v, received %v.", rangeCount+1, kvs[1][rangeCount], val)
+		}
+		rangeCount++
+	}
+	m.OrderedRange(rangeFunc)
+}
