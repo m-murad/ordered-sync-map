@@ -97,7 +97,7 @@ func TestUnorderedRange(t *testing.T) {
 func TestOrderedRange(t *testing.T) {
 	kvs := [][]interface{}{
 		{"key", 123, "some-key", "some-other-key", 56.11}, //keys
-		{123, "key", "val 1", "val_2", true}, //values
+		{123, "key", "val 1", "val_2", true},              //values
 	}
 
 	m := mp.New()
