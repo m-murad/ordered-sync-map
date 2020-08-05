@@ -38,6 +38,8 @@ func TestGetPutDelete(t *testing.T) {
 		}
 	}
 
+	m.Put("key", 456)
+
 	if val, ok := m.Get(123); !ok {
 		t.Fatal("2nd value returned by Get for key 123 should be true")
 	} else if val == nil {
@@ -115,5 +117,8 @@ func TestOrderedRange(t *testing.T) {
 		}
 		rangeCount++
 	}
+	m.OrderedRange(rangeFunc)
+
+	m = mp.New()
 	m.OrderedRange(rangeFunc)
 }
