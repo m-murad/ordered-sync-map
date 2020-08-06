@@ -118,7 +118,4 @@ func TestOrderedRange(t *testing.T) {
 		rangeCount++
 	}
 	m.OrderedRange(rangeFunc)
-
-	m = mp.New()
-	m.OrderedRange(rangeFunc)
 }

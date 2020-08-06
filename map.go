@@ -83,17 +83,11 @@ func (m *Map) UnorderedRange(f func(key interface{}, value interface{})) {
 // This will probably be slower than UnorderedRange()
 func (m *Map) OrderedRange(f func(key interface{}, value interface{})) {
 	m.mu.RLock()
-	if m.dll.Len() == 0 {
-		m.mu.RUnlock()
-		return
-	}
-
 	cur := m.dll.Back()
 	for cur != nil {
 		me := cur.Value.(mapElement)
 		f(me.key, me.value)
 		cur = cur.Prev()
 	}
-
 	m.mu.RUnlock()
 }
