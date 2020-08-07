@@ -33,7 +33,6 @@ func main() {
 
     // OrderedRange will iterate over the Map in the sequence in which 
     // elements were added.
-    // This is probable slower than UnorderedRange.
     m.OrderedRange(func(key interface{}, val interface{}) {
         log.Println("Key - %v, Value - %v", key, val)
     })

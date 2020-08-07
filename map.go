@@ -80,7 +80,9 @@ func (m *Map) UnorderedRange(f func(key interface{}, value interface{})) {
 }
 
 // OrderedRange will range over the map in ab ordered sequence.
-// This will probably be slower than UnorderedRange()
+// This is way faster than UnorderedRange. For a map containing 10_000_000 items
+// UnorderedRange completes in ~1.7 seconds,
+// OrderedRange completes in ~98 milli seconds.
 func (m *Map) OrderedRange(f func(key interface{}, value interface{})) {
 	m.mu.RLock()
 	cur := m.dll.Back()
