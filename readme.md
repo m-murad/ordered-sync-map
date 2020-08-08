@@ -27,12 +27,14 @@ func main() {
 
     // UnorderedRange will iterate over the Map in a random sequence.
     // This is same as ranging over a map using the "for range" syntax.
+    // Parameter function should not call any methods associated with the map. 
     m.UnorderedRange(func(key interface{}, val interface{}) {
         log.Println("Key - %v, Value - %v", key, val)
     })
 
     // OrderedRange will iterate over the Map in the sequence in which 
     // elements were added.
+    // Parameter function should not call any methods associated with the map.
     m.OrderedRange(func(key interface{}, val interface{}) {
         log.Println("Key - %v, Value - %v", key, val)
     })

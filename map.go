@@ -71,6 +71,8 @@ func (m *Map) Delete(key interface{}) bool {
 
 // UnorderedRange will range over the map in an unordered sequence.
 // This is same as ranging over a map using the "for range" syntax.
+// Parameter func f should not call any method of the Map, eg Get, Put, Delete, UnorderedRange, OrderedRange etc
+// It will cause a deadlock
 func (m *Map) UnorderedRange(f func(key interface{}, value interface{})) {
 	m.mu.RLock()
 	for k, v := range m.mp {
@@ -83,6 +85,8 @@ func (m *Map) UnorderedRange(f func(key interface{}, value interface{})) {
 // This is way faster than UnorderedRange. For a map containing 10_000_000 items
 // UnorderedRange completes in ~1.7 seconds,
 // OrderedRange completes in ~98 milli seconds.
+// Parameter func f should not call any method of the Map, eg Get, Put, Delete, UnorderedRange, OrderedRange etc
+// It will cause a deadlock
 func (m *Map) OrderedRange(f func(key interface{}, value interface{})) {
 	m.mu.RLock()
 	cur := m.dll.Back()
