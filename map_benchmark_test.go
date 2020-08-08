@@ -19,20 +19,20 @@ func populateOrderedSyncMap(m *mp.Map, size int) {
 }
 
 func BenchmarkOrderedSyncMapGet(b *testing.B) {
-	for n := 2; n <= 2048; n *= 2 {
-		m := initMap()
-		populateOrderedSyncMap(m, 10)
-
+	mapSize := 1000
+	m := initMap()
+	populateOrderedSyncMap(m, mapSize)
+	for n := 1; n <= 10; n++ {
 		b.Run(fmt.Sprintf("Get form ordered_sync_map - %d", n), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				_, _ = m.Get(4)
+				_, _ = m.Get(b.N % mapSize)
 			}
 		})
 	}
 }
 
 func BenchmarkOrderedSyncMapPut(b *testing.B) {
-	for n := 0; n < 10; n++ {
+	for n := 1; n <= 10; n++ {
 		m := mp.New()
 		b.Run(fmt.Sprintf("Put in ordered_sync_map - %d", n), func(b *testing.B) {
 			populateOrderedSyncMap(m, b.N)
@@ -43,10 +43,9 @@ func BenchmarkOrderedSyncMapPut(b *testing.B) {
 func BenchmarkOrderedSyncMapDelete(b *testing.B) {
 	for n := 1; n < 10; n++ {
 		b.Run(fmt.Sprintf("Delete form ordered_sync_map - %d", n), func(b *testing.B) {
-			b.StopTimer()
 			size := b.N
 			m := getPopulatedOrderedSyncMap(size)
-			b.StartTimer()
+			b.ResetTimer()
 			for i := 0; i < size; i++ {
 				m.Delete(i)
 			}
@@ -57,10 +56,8 @@ func BenchmarkOrderedSyncMapDelete(b *testing.B) {
 func BenchmarkOrderedSyncMapUnorderedTraversal(b *testing.B) {
 	for n := 1; n < 5; n++ {
 		b.Run(fmt.Sprintf("Traverse ordered_sync_map randomly - %d", n), func(b *testing.B) {
-			b.StopTimer()
-			size := b.N
-			m := getPopulatedOrderedSyncMap(size)
-			b.StartTimer()
+			m := getPopulatedOrderedSyncMap(b.N)
+			b.ResetTimer()
 			m.UnorderedRange(func(key interface{}, value interface{}) {})
 		})
 	}
@@ -69,10 +66,8 @@ func BenchmarkOrderedSyncMapUnorderedTraversal(b *testing.B) {
 func BenchmarkOrderedSyncMapOrderedTraversal(b *testing.B) {
 	for n := 1; n < 5; n++ {
 		b.Run(fmt.Sprintf("Traverse ordered_sync_map in order - %d", n), func(b *testing.B) {
-			b.StopTimer()
-			size := b.N
-			m := getPopulatedOrderedSyncMap(size)
-			b.StartTimer()
+			m := getPopulatedOrderedSyncMap(b.N)
+			b.ResetTimer()
 			m.OrderedRange(func(key interface{}, value interface{}) {})
 		})
 	}
