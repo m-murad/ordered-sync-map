@@ -119,3 +119,47 @@ func TestOrderedRange(t *testing.T) {
 	}
 	m.OrderedRange(rangeFunc)
 }
+
+func TestLength(t *testing.T) {
+	m := initMap()
+
+	m.Put("a", 1)
+	m.Put("b", 2)
+	if m.Length() != 2 {
+		t.FailNow()
+	}
+
+	m.Put("c", 2)
+	m.Put("d", 2)
+	m.Put("e", 2)
+	if m.Length() != 5 {
+		t.FailNow()
+	}
+
+	m.Put("e", 3)
+	if m.Length() != 5 {
+		t.FailNow()
+	}
+
+	m.Delete("a")
+	if m.Length() != 4 {
+		t.FailNow()
+	}
+
+	m.Delete("does_not_exist")
+	if m.Length() != 4 {
+		t.FailNow()
+	}
+
+	m.Delete("b")
+	m.Delete("c")
+	m.Delete("d")
+	if m.Length() != 1 {
+		t.FailNow()
+	}
+
+	m.Delete("e")
+	if m.Length() != 0 {
+		t.FailNow()
+	}
+}

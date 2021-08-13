@@ -38,5 +38,8 @@ func main() {
     m.OrderedRange(func(key interface{}, val interface{}) {
         log.Println("Key - %v, Value - %v", key, val)
     })
+
+    // Length will return the length of the Map.
+    m.Length()
 }
 ```
