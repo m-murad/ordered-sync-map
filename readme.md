@@ -41,5 +41,11 @@ func main() {
 
     // Length will return the length of the Map.
     m.Length()
+
+    // GetOrPut will get the currect value if the key exists else it will save the new value
+    finalValue, updated := m.GetOrPut(key, value)
+
+    // GetAndDelete will get the value for the give key and deleted the key from the Map
+    value, deleted := m.GetAndDelete(key)
 }
 ```

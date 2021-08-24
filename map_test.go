@@ -163,3 +163,51 @@ func TestLength(t *testing.T) {
 		t.FailNow()
 	}
 }
+
+func TestGetOrPut(t *testing.T) {
+	m := initMap()
+
+	m.Put("a", 1)
+	m.Put("b", 2)
+	m.Put("c", 3)
+
+	if finalValue, updated := m.GetOrPut("a", 4); finalValue != 1 && !updated {
+		t.FailNow()
+	}
+
+	if finalValue, updated := m.GetOrPut("d", 4); finalValue != 4 && updated {
+		t.FailNow()
+	}
+
+	m.Delete("a")
+	if finalValue, updated := m.GetOrPut("a", 5); finalValue != 5 && updated {
+		t.FailNow()
+	}
+
+	m.Put("e", 5)
+	if finalValue, updated := m.GetOrPut("e", 6); finalValue != 5 && !updated {
+		t.FailNow()
+	}
+}
+
+func TestGetAndDelete(t *testing.T) {
+	m := initMap()
+
+	m.Put("a", 1)
+	m.Put("b", 2)
+	m.Put("c", 3)
+	m.Put("d", 4)
+
+	if value, deleted := m.GetAndDelete("a"); value != 1 && !deleted {
+		t.Fail()
+	}
+
+	if value, deleted := m.GetAndDelete("a"); value != nil && deleted {
+		t.Fail()
+	}
+
+	m.Put("a", 5)
+	if value, deleted := m.GetAndDelete("a"); value != 5 && !deleted {
+		t.Fail()
+	}
+}
