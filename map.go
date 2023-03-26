@@ -5,59 +5,61 @@ import (
 	"sync"
 )
 
-type mapElement struct {
-	key   interface{}
-	value interface{}
+type mapElement[K comparable, V any] struct {
+	key   K
+	value V
 }
 
 // Map is a thread safe and ordered implementation of standard map.
-type Map struct {
-	mp  map[interface{}]*list.Element
+// K is the type of key and V is the type of value.
+type Map[K comparable, V any] struct {
+	mp  map[K]*list.Element
 	mu  sync.RWMutex
 	dll *list.List
 }
 
-// New returns an initialized Map.
-func New() *Map {
-	m := new(Map)
-	m.mp = make(map[interface{}]*list.Element)
+// New returns an initialized Map[K, V].
+func New[K comparable, V any]() *Map[K, V] {
+	m := new(Map[K, V])
+	m.mp = make(map[K]*list.Element)
 	m.dll = list.New()
 	return m
 }
 
-// Get returns the value stored in the map for a key, or nil if no
-// value is present.
-// The ok result indicates whether value was found in the map.
-func (m *Map) Get(key interface{}) (interface{}, bool) {
+// Get returns the value stored in the map for a key.
+// If the key is not found in the Map it return the zero value of type V.
+// The bool indicates whether value was found in the map.
+func (m *Map[K, V]) Get(key K) (V, bool) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
 	v, ok := m.mp[key]
 	if !ok {
-		return nil, false
+		var value V
+		return value, ok
 	}
 
-	me := v.Value.(mapElement)
+	me := v.Value.(mapElement[K, V])
 	return me.value, ok
 }
 
 // Put sets the value for the given key.
 // It will replace the value if the key already exists in the map
 // even if the values are same.
-func (m *Map) Put(key interface{}, val interface{}) {
+func (m *Map[K, V]) Put(key K, val V) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	if e, ok := m.mp[key]; !ok {
-		m.mp[key] = m.dll.PushFront(mapElement{key: key, value: val})
+		m.mp[key] = m.dll.PushFront(mapElement[K, V]{key: key, value: val})
 	} else {
-		e.Value = mapElement{key: key, value: val}
+		e.Value = mapElement[K, V]{key: key, value: val}
 	}
 }
 
 // Delete deletes the value for a key.
 // It returns a boolean indicating weather the key existed and it was deleted.
-func (m *Map) Delete(key interface{}) bool {
+func (m *Map[K, V]) Delete(key K) bool {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -75,35 +77,32 @@ func (m *Map) Delete(key interface{}) bool {
 // This is same as ranging over a map using the "for range" syntax.
 // Parameter func f should not call any method of the Map, eg Get, Put, Delete, UnorderedRange, OrderedRange etc
 // It will cause a deadlock.
-func (m *Map) UnorderedRange(f func(key interface{}, value interface{})) {
+func (m *Map[K, V]) UnorderedRange(f func(key K, value V)) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
 	for k, v := range m.mp {
-		f(k, v.Value.(mapElement).value)
+		f(k, v.Value.(mapElement[K, V]).value)
 	}
 }
 
 // OrderedRange will range over the map in ab ordered sequence.
-// This is way faster than UnorderedRange. For a map containing 10_000_000 items
-// UnorderedRange completes in ~1.7 seconds,
-// OrderedRange completes in ~98 milli seconds.
 // Parameter func f should not call any method of the Map, eg Get, Put, Delete, UnorderedRange, OrderedRange etc
 // It will cause a deadlock.
-func (m *Map) OrderedRange(f func(key interface{}, value interface{})) {
+func (m *Map[K, V]) OrderedRange(f func(key K, value V)) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
 	cur := m.dll.Back()
 	for cur != nil {
-		me := cur.Value.(mapElement)
+		me := cur.Value.(mapElement[K, V])
 		f(me.key, me.value)
 		cur = cur.Prev()
 	}
 }
 
 // Length will return the length of Map.
-func (m *Map) Length() int {
+func (m *Map[k, V]) Length() int {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
@@ -114,15 +113,15 @@ func (m *Map) Length() int {
 // If the key did not exist previously it will be added to the Map.
 // updated will be true if the key existed previously
 // otherwise it will be false if the key did not exist and was added to the Map.
-func (m *Map) GetOrPut(key interface{}, value interface{}) (finalValue interface{}, updated bool) {
+func (m *Map[K, V]) GetOrPut(key K, value V) (V, bool) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	if e, exists := m.mp[key]; exists {
-		e.Value = mapElement{key: key, value: value}
-		return value, true
+		me := e.Value.(mapElement[K, V])
+		return me.value, true
 	} else {
-		m.mp[key] = m.dll.PushFront(mapElement{key: key, value: value})
+		m.mp[key] = m.dll.PushFront(mapElement[K, V]{key: key, value: value})
 		return value, false
 	}
 }
@@ -130,15 +129,17 @@ func (m *Map) GetOrPut(key interface{}, value interface{}) (finalValue interface
 // GetAndDelete will get the value saved against the given key.
 // deleted will be true if the key existed previously
 // otherwise it will be false.
-func (m *Map) GetAndDelete(key interface{}) (value interface{}, deleted bool) {
+func (m *Map[K, V]) GetAndDelete(key K) (V, bool) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	if e, exists := m.mp[key]; exists {
 		m.dll.Remove(e)
 		delete(m.mp, key)
-		return e.Value, true
+		me := e.Value.(mapElement[K, V])
+		return me.value, true
 	} else {
-		return nil, false
+		var value V
+		return value, false
 	}
 }

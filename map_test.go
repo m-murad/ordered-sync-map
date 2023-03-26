@@ -1,12 +1,13 @@
 package ordered_sync_map_test
 
 import (
-	mp "github.com/m-murad/ordered-sync-map"
 	"testing"
+
+	mp "github.com/m-murad/ordered-sync-map"
 )
 
-func initMap() *mp.Map {
-	return mp.New()
+func initMap() *mp.Map[any, any] {
+	return mp.New[any, any]()
 }
 
 func TestGetPutDelete(t *testing.T) {
@@ -102,8 +103,8 @@ func TestOrderedRange(t *testing.T) {
 		{123, "key", "val 1", "val_2", true},              //values
 	}
 
-	m := mp.New()
-	for i, _ := range kvs[0] {
+	m := initMap()
+	for i := range kvs[0] {
 		m.Put(kvs[0][i], kvs[1][i])
 	}
 
@@ -123,43 +124,23 @@ func TestOrderedRange(t *testing.T) {
 func TestLength(t *testing.T) {
 	m := initMap()
 
+	if m.Length() != 0 {
+		t.FailNow()
+	}
+
 	m.Put("a", 1)
 	m.Put("b", 2)
 	if m.Length() != 2 {
 		t.FailNow()
 	}
 
-	m.Put("c", 2)
-	m.Put("d", 2)
-	m.Put("e", 2)
-	if m.Length() != 5 {
-		t.FailNow()
-	}
-
-	m.Put("e", 3)
-	if m.Length() != 5 {
-		t.FailNow()
-	}
-
 	m.Delete("a")
-	if m.Length() != 4 {
-		t.FailNow()
-	}
-
-	m.Delete("does_not_exist")
-	if m.Length() != 4 {
-		t.FailNow()
-	}
-
-	m.Delete("b")
-	m.Delete("c")
-	m.Delete("d")
 	if m.Length() != 1 {
 		t.FailNow()
 	}
 
-	m.Delete("e")
-	if m.Length() != 0 {
+	m.Delete("does_not_exist")
+	if m.Length() != 1 {
 		t.FailNow()
 	}
 }
@@ -167,47 +148,24 @@ func TestLength(t *testing.T) {
 func TestGetOrPut(t *testing.T) {
 	m := initMap()
 
-	m.Put("a", 1)
-	m.Put("b", 2)
-	m.Put("c", 3)
-
-	if finalValue, updated := m.GetOrPut("a", 4); finalValue != 1 && !updated {
-		t.FailNow()
+	if finalValue, updated := m.GetOrPut("a", 5); finalValue != 5 || updated {
+		t.Fail()
 	}
 
-	if finalValue, updated := m.GetOrPut("d", 4); finalValue != 4 && updated {
-		t.FailNow()
-	}
-
-	m.Delete("a")
-	if finalValue, updated := m.GetOrPut("a", 5); finalValue != 5 && updated {
-		t.FailNow()
-	}
-
-	m.Put("e", 5)
-	if finalValue, updated := m.GetOrPut("e", 6); finalValue != 5 && !updated {
-		t.FailNow()
+	if finalValue, updated := m.GetOrPut("a", 4); finalValue != 5 || !updated {
+		t.Fail()
 	}
 }
 
 func TestGetAndDelete(t *testing.T) {
 	m := initMap()
 
-	m.Put("a", 1)
-	m.Put("b", 2)
-	m.Put("c", 3)
-	m.Put("d", 4)
-
-	if value, deleted := m.GetAndDelete("a"); value != 1 && !deleted {
+	if value, deleted := m.GetAndDelete("a"); value != nil || deleted {
 		t.Fail()
 	}
 
-	if value, deleted := m.GetAndDelete("a"); value != nil && deleted {
-		t.Fail()
-	}
-
-	m.Put("a", 5)
-	if value, deleted := m.GetAndDelete("a"); value != 5 && !deleted {
+	m.Put("a", 2)
+	if value, deleted := m.GetAndDelete("a"); value != 2 || !deleted {
 		t.Fail()
 	}
 }

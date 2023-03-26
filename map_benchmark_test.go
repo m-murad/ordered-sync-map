@@ -2,17 +2,18 @@ package ordered_sync_map_test
 
 import (
 	"fmt"
-	mp "github.com/m-murad/ordered-sync-map"
 	"testing"
+
+	mp "github.com/m-murad/ordered-sync-map"
 )
 
-func getPopulatedOrderedSyncMap(size int) *mp.Map {
-	m := mp.New()
+func getPopulatedOrderedSyncMap(size int) *mp.Map[any, any] {
+	m := mp.New[any, any]()
 	populateOrderedSyncMap(m, size)
 	return m
 }
 
-func populateOrderedSyncMap(m *mp.Map, size int) {
+func populateOrderedSyncMap(m *mp.Map[any, any], size int) {
 	for i := 0; i < size; i++ {
 		m.Put(i, i)
 	}
@@ -33,7 +34,7 @@ func BenchmarkOrderedSyncMapGet(b *testing.B) {
 
 func BenchmarkOrderedSyncMapPut(b *testing.B) {
 	for n := 1; n <= 10; n++ {
-		m := mp.New()
+		m := mp.New[any, any]()
 		b.Run(fmt.Sprintf("Put in ordered_sync_map - %d", n), func(b *testing.B) {
 			populateOrderedSyncMap(m, b.N)
 		})
